@@ -3,7 +3,7 @@ use std::fmt;
 
 /// Thinly wrap an error by defining a hidden error type and returning a closure to construct it
 #[macro_export]
-macro_rules! wrap_err {
+macro_rules! wrap {
     ($msg:literal) => {{
         #[derive(Debug)]
         struct WrappedError<E> {
@@ -101,12 +101,12 @@ where
 macro_rules! ensure {
     ($cond:expr, $msg:literal $(,)?) => {
         if !$cond {
-            return $crate::err!($msg);
+            $crate::private::Err($crate::err!($msg))?;
         }
     };
     ($cond:expr, $fmt:literal, $($arg:tt)*) => {
         if !$cond {
-            return $crate::err!($fmt, $($arg)*);
+            $crate::private::Err($crate::err!($fmt, $($arg)*))?;
         }
     };
 }
@@ -114,10 +114,10 @@ macro_rules! ensure {
 #[macro_export]
 macro_rules! bail {
     ($msg:literal $(,)?) => {
-        return $crate::private::Err($crate::err!($msg));
+        $crate::private::Err($crate::err!($msg))?;
     };
     ($fmt:literal, $($arg:tt)*) => {
-        return $crate::private::Err($crate::err!($fmt, $($arg)*));
+        $crate::private::Err($crate::err!($fmt, $($arg)*))?;
     };
 }
 
