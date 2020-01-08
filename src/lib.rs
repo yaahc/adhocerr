@@ -1,6 +1,3 @@
-//! Adhoc Errors
-//! ============
-//!
 //! A library for the construction of efficient static/dynamic single use error types per callsite.
 //!
 //!
@@ -9,11 +6,9 @@
 //! adhocerr = "0.1"
 //! ```
 //!
-//! <br>
-//!
 //! ## Examples
 //!
-//! Creating an root cause error:
+//! Creating a root cause error:
 //!
 //! ```rust
 //! use adhocerr::err;
@@ -42,13 +37,10 @@
 //! }
 //! ```
 //!
-//!
-//! <br>
-//!
 //! ## Details
 //!
 //! This crate provides two primary macros. `err!` and `wrap!`. The former, `err!`,
-//! is used to create adhoc error types without a root cause from strings. `wrap!`
+//! is used to create ad-hoc error types without a root cause from strings. `wrap!`
 //! on the other hand is used to create new errors with a source member.
 //!
 //! Both of these macros have two versions, and they generate completely code,
@@ -216,11 +208,11 @@ macro_rules! wrap {
     };
 }
 
-/// Create an adhoc error type with zero size if none is needed
+/// Create an ad-hoc error type with zero size if none is needed
 ///
 /// ## Examples
 ///
-/// Creating a static adhoc error type:
+/// Creating a static ad-hoc error type:
 ///
 /// ```rust
 /// use adhocerr::err;
@@ -271,7 +263,7 @@ macro_rules! wrap {
 /// }
 /// ```
 ///
-/// Creating a dynamic adhoc error type:
+/// Creating a dynamic ad-hoc error type:
 ///
 /// ```rust
 /// use adhocerr::err;
@@ -371,29 +363,98 @@ where
     }
 }
 
-/// Return an adhoc error if the boolean is false
+/// Return early with an error if a condition is not satisfied.
+///
+/// This macro is equivalent to `if !$cond { return Err(From::from($err)); }`.
+///
+/// Analogously to `assert!`, `ensure!` takes a condition and exits the function
+/// if the condition fails. Unlike `assert!`, `ensure!` returns an `Error`
+/// rather than panicking.
+///
+/// # Example
+///
+/// ```
+/// use adhocerr::ensure;
+///
+/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// #     let user = 0;
+/// #
+/// ensure!(user == 0, "only user 0 is allowed");
+/// #     Ok(())
+/// # }
+/// ```
+///
+/// ```
+/// use adhocerr::ensure;
+///
+/// # const MAX_DEPTH: usize = 1;
+/// #
+/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// #     let depth = 0;
+/// #
+/// ensure!(depth <= MAX_DEPTH, "Recursion limit exceeded");
+/// #     Ok(())
+/// # }
+/// ```
 #[macro_export]
 macro_rules! ensure {
     ($cond:expr, $msg:literal $(,)?) => {
         if !$cond {
-            $crate::private::Err($crate::err!($msg))?;
+            return $crate::private::Err($crate::err!($msg));
         }
     };
     ($cond:expr, $fmt:literal, $($arg:tt)*) => {
         if !$cond {
-            $crate::private::Err($crate::err!($fmt, $($arg)*))?;
+            return $crate::private::Err($crate::err!($fmt, $($arg)*));
         }
     };
 }
 
-/// Return an adhoc error immediately
+/// Return an ad-hoc error immediately
+///
+/// This macro is equivalent to `return Err(From::from($err))`.
+///
+/// # Example
+///
+/// ```
+/// use adhocerr::bail;
+///
+/// # fn has_permission(user: usize, resource: usize) -> bool {
+/// #     true
+/// # }
+/// #
+/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// #     let user = 0;
+/// #     let resource = 0;
+/// #
+/// if !has_permission(user, resource) {
+///     bail!("permission denied for accessing {}", resource);
+/// }
+/// #     Ok(())
+/// # }
+/// ```
+///
+/// ```
+/// use adhocerr::bail;
+///
+/// # const MAX_DEPTH: usize = 1;
+/// #
+/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// #     let depth = 0;
+/// #
+/// if depth > MAX_DEPTH {
+///     bail!("Recursion limit exceeded");
+/// }
+/// #     Ok(())
+/// # }
+/// ```
 #[macro_export]
 macro_rules! bail {
     ($msg:literal $(,)?) => {
-        $crate::private::Err($crate::err!($msg))?;
+        return $crate::private::Err($crate::err!($msg));
     };
     ($fmt:literal, $($arg:tt)*) => {
-        $crate::private::Err($crate::err!($fmt, $($arg)*));
+        return $crate::private::Err($crate::err!($fmt, $($arg)*));
     };
 }
 
