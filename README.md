@@ -19,7 +19,7 @@ adhocerr = "0.1"
 Creating an root cause error:
 
 ```rust
-use std::error::Error;
+use adhocerr::err;
 
 fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
     start
@@ -33,11 +33,10 @@ fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 Wrapping another Error:
 
 ```rust
-use std::error::Error;
+use adhocerr::wrap;
 
-fn record_success(tmp_commit: &SHA1) -> Result<(), impl Error + 'static> {
-    std::fs::write(".git/.gsync.sha" , tmp_commit)
-        .map_err(wrap!("Failed to save results of script"))
+fn record_success() -> Result<(), impl Error + 'static> {
+    std::fs::write(".success", "true").map_err(wrap!("Failed to save results of script"))
 }
 ```
 

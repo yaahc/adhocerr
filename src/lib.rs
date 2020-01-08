@@ -16,7 +16,11 @@
 //! Creating an root cause error:
 //!
 //! ```rust
-//! use std::error::Error;
+//! use adhocerr::err;
+//! # use std::{
+//! #     error::Error,
+//! #     path::{Path, PathBuf},
+//! # };
 //!
 //! fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 //!     start
@@ -30,7 +34,8 @@
 //! Wrapping another Error:
 //!
 //! ```rust
-//! use std::error::Error;
+//! use adhocerr::wrap;
+//! # use std::error::Error;
 //!
 //! fn record_success() -> Result<(), impl Error + 'static> {
 //!     std::fs::write(".success", "true").map_err(wrap!("Failed to save results of script"))
@@ -66,6 +71,10 @@
 //! The Expanded version of the example above would look like this:
 //!
 //! ```rust
+//! # use std::{
+//! #     error::Error,
+//! #     path::{Path, PathBuf},
+//! # };
 //! fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 //!     start
 //!         .ancestors()
@@ -101,7 +110,8 @@ pub use err as format_err;
 /// Wrap an error without changing its size or allocating:
 ///
 /// ```rust
-/// use std::error::Error;
+/// use adhocerr::wrap;
+/// # use std::error::Error;
 ///
 /// fn record_success() -> Result<(), impl Error + 'static> {
 ///     std::fs::write(".success", "true").map_err(wrap!("Failed to save results of script"))
@@ -112,8 +122,7 @@ pub use err as format_err;
 ///
 ///
 /// ```rust
-/// use std::error::Error;
-///
+/// # use std::error::Error;
 /// fn record_success() -> Result<(), impl Error + 'static> {
 ///     std::fs::write(".success", "true").map_err({
 ///         #[derive(Debug)]
@@ -147,7 +156,8 @@ pub use err as format_err;
 /// Wrapping an error with an runtime generated String:
 ///
 /// ```rust
-/// use std::error::Error;
+/// use adhocerr::wrap;
+/// # use std::{error::Error, path::Path};
 ///
 /// fn record_success(file: &Path) -> Result<(), impl Error + 'static> {
 ///     std::fs::write(file, "true").map_err(wrap!(
@@ -160,11 +170,10 @@ pub use err as format_err;
 /// Which expands to:
 ///
 /// ```rust
-/// use std::error::Error;
-///
+/// # use std::{error::Error, path::Path};
 /// fn record_success(file: &Path) -> Result<(), impl Error + 'static> {
 ///     std::fs::write(file, "true").map_err(|source| {
-///         crate::private::format_wrap_err(
+///         adhocerr::private::format_wrap_err(
 ///             source,
 ///             format_args!(
 ///                 "Failed to save results of script to file: {}",
@@ -214,7 +223,11 @@ macro_rules! wrap {
 /// Creating a static adhoc error type:
 ///
 /// ```rust
-/// use std::error::Error;
+/// use adhocerr::err;
+/// # use std::{
+/// #     error::Error,
+/// #     path::{Path, PathBuf},
+/// # };
 ///
 /// fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 ///     start
@@ -228,6 +241,10 @@ macro_rules! wrap {
 /// Which expands to:
 ///
 /// ```rust
+/// # use std::{
+/// #     error::Error,
+/// #     path::{Path, PathBuf},
+/// # };
 /// fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 ///     start
 ///         .ancestors()
@@ -257,7 +274,11 @@ macro_rules! wrap {
 /// Creating a dynamic adhoc error type:
 ///
 /// ```rust
-/// use std::error::Error;
+/// use adhocerr::err;
+/// # use std::{
+/// #     error::Error,
+/// #     path::{Path, PathBuf},
+/// # };
 ///
 /// fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 ///     start
@@ -274,14 +295,16 @@ macro_rules! wrap {
 /// Which expands to:
 ///
 /// ```rust
-/// use std::error::Error;
-///
+/// # use std::{
+/// #     error::Error,
+/// #     path::{Path, PathBuf},
+/// # };
 /// fn get_git_root(start: &Path) -> Result<PathBuf, impl Error + 'static> {
 ///     start
 ///         .ancestors()
 ///         .find(|a| a.join(".git").is_dir())
 ///         .map(Path::to_owned)
-///         .ok_or(crate::private::format_err(format_args!(
+///         .ok_or(adhocerr::private::format_err(format_args!(
 ///             "Unable to find .git/ in parent directories for {}",
 ///             start.display()
 ///         )))
