@@ -376,12 +376,12 @@ where
 /// ```
 /// use adhocerr::ensure;
 ///
-/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// fn main() -> Result<(), impl std::error::Error + 'static> {
 /// #     let user = 0;
 /// #
-/// ensure!(user == 0, "only user 0 is allowed");
-/// #     Ok(())
-/// # }
+///     ensure!(user == 0, "only user 0 is allowed");
+///     Ok(())
+/// }
 /// ```
 ///
 /// ```
@@ -389,23 +389,33 @@ where
 ///
 /// # const MAX_DEPTH: usize = 1;
 /// #
-/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// fn main() -> Result<(), anyhow::Error> {
 /// #     let depth = 0;
 /// #
-/// ensure!(depth <= MAX_DEPTH, "Recursion limit exceeded");
-/// #     Ok(())
-/// # }
+///     ensure!(depth <= MAX_DEPTH, "Recursion limit exceeded"?);
+///     Ok(())
+/// }
 /// ```
 #[macro_export]
 macro_rules! ensure {
-    ($cond:expr, $msg:literal $(,)?) => {
+    ($cond:expr, $msg:literal) => {
         if !$cond {
             return $crate::private::Err($crate::err!($msg));
+        }
+    };
+    ($cond:expr, $msg:literal?) => {
+        if !$cond {
+            return $crate::private::Err($crate::err!($msg).into());
         }
     };
     ($cond:expr, $fmt:literal, $($arg:tt)*) => {
         if !$cond {
             return $crate::private::Err($crate::err!($fmt, $($arg)*));
+        }
+    };
+    ($cond:expr, $fmt:literal, $($arg:tt)*?) => {
+        if !$cond {
+            return $crate::private::Err($crate::err!($fmt, $($arg)*).into());
         }
     };
 }
@@ -423,15 +433,16 @@ macro_rules! ensure {
 /// #     true
 /// # }
 /// #
-/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// fn main() -> Result<(), impl std::error::Error + 'static> {
 /// #     let user = 0;
 /// #     let resource = 0;
 /// #
-/// if !has_permission(user, resource) {
-///     bail!("permission denied for accessing {}", resource);
+///     if !has_permission(user, resource) {
+///         bail!("permission denied for accessing {}", resource);
+///     }
+///
+///     Ok(())
 /// }
-/// #     Ok(())
-/// # }
 /// ```
 ///
 /// ```
@@ -439,22 +450,29 @@ macro_rules! ensure {
 ///
 /// # const MAX_DEPTH: usize = 1;
 /// #
-/// # fn main() -> Result<(), impl std::error::Error + 'static> {
+/// fn main() -> Result<(), anyhow::Error> {
 /// #     let depth = 0;
 /// #
-/// if depth > MAX_DEPTH {
-///     bail!("Recursion limit exceeded");
+///     if depth > MAX_DEPTH {
+///         bail!("Recursion limit exceeded"?);
+///     }
+///
+///     Ok(())
 /// }
-/// #     Ok(())
-/// # }
 /// ```
 #[macro_export]
 macro_rules! bail {
-    ($msg:literal $(,)?) => {
+    ($msg:literal) => {
         return $crate::private::Err($crate::err!($msg));
+    };
+    ($msg:literal?) => {
+        return $crate::private::Err($crate::err!($msg).into());
     };
     ($fmt:literal, $($arg:tt)*) => {
         return $crate::private::Err($crate::err!($fmt, $($arg)*));
+    };
+    ($fmt:literal, $($arg:tt)*?) => {
+        return $crate::private::Err($crate::err!($fmt, $($arg)*).into());
     };
 }
 
@@ -476,5 +494,38 @@ pub mod private {
             msg: args.to_string(),
             source,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn try_code_anyhow() -> Result<(), anyhow::Error> {
+        let code = 1;
+
+        ensure!(code == 0, "Command exited with a non zero status code"?);
+
+        Ok(())
+    }
+
+    fn try_code_impl() -> Result<(), impl std::error::Error + 'static> {
+        let code = 1;
+
+        ensure!(code == 0, "Command exited with a non zero status code");
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn ensure_coerce() {
+        try_code_anyhow().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn ensure_impl() {
+        try_code_impl().unwrap();
     }
 }

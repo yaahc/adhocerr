@@ -1,6 +1,6 @@
 [package]
 name = "adhocerr"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Jane Lusby <jlusby@yaah.dev>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -16,3 +16,6 @@ A library for the construction of efficient single use static/dynamic error type
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[dev-dependencies]
+anyhow = "1.0.26"
