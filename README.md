@@ -16,7 +16,7 @@ adhocerr = "0.1"
 
 ## Examples
 
-Creating an root cause error:
+Creating a root cause error:
 
 ```rust
 use adhocerr::err;
