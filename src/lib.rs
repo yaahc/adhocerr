@@ -39,16 +39,15 @@
 //!
 //! ## Details
 //!
-//! This crate provides two primary macros. `err!` and `wrap!`. The former, `err!`,
-//! is used to create ad-hoc error types without a root cause from strings. `wrap!`
-//! on the other hand is used to create new errors with a source member.
+//! This crate provides two primary macros. `err!` and `wrap!`. The former, `err!`, is used to
+//! create ad-hoc error types without a root cause from strings. `wrap!` on the other hand is used
+//! to create new errors with a source member.
 //!
-//! Both of these macros have two versions, and they generate completely code,
-//! depending on whether or not string interopoation (`format!`-like code) is used
-//! in the error message. When the error message is a fixed string, the macro
-//! declares a new struct in line that has the string itself inserted into its
-//! `Display` implementation. This way no memory is used or allocations made to
-//! hold the error when they are not needed.
+//! Both of these macros have two versions, and they generate completely different code, depending
+//! on whether or not string interopoation (`format!`-like code) is used in the error message. When
+//! the error message is a fixed string, the macro declares a new struct in line that has the
+//! string itself inserted into its `Display` implementation. This way no memory is used or
+//! allocations made to hold the error when they are not needed.
 //!
 //! For `err!` this means that your error type is a Zero Sized Type (ZST), for
 //! `wrap!` this means that your Wrapper error is the same size as the original
